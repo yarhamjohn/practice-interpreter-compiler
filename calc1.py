@@ -57,6 +57,11 @@ class Interpreter(object):
         # what token to create based on the single character
         current_char = text[self.pos]
 
+        # ignore whitespace
+        if current_char.isspace():
+            self.pos += 1
+            current_char = text[self.pos]
+
         # get each consecutive character until a non-digit is reached
         # then create an INTEGER token from the multi-digit integer,
         # increment self.pos index to point to the next character
