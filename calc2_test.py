@@ -27,6 +27,10 @@ class TestCalc1Interpreter(unittest.TestCase):
         interpreter = Interpreter("12 * 5")
         self.assertEqual(interpreter.expr(), 60)
 
+    def test_division(self):
+        interpreter = Interpreter("12 / 6")
+        self.assertEqual(interpreter.expr(), 2)
+
 
 if __name__ == '__main__':
     unittest.main()

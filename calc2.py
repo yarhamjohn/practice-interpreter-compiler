@@ -1,14 +1,14 @@
 # Token types
 # EOF (end-of-file) token is used to indicate that
 # there is no more input left for lexical analysis
-INTEGER, PLUS, MINUS, MULTIPLY, EOF = 'INTEGER', 'PLUS', 'MINUS', 'MULTIPLY', 'EOF'
+INTEGER, PLUS, MINUS, MULTIPLY, DIVIDE, EOF = 'INTEGER', 'PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE', 'EOF'
 
 
 class Token(object):
     def __init__(self, type, value):
-        # token type: INTEGER, PLUS, MINUS, MULTIPLY' or EOF
+        # token type: INTEGER, PLUS, MINUS, MULTIPLY, DIVIDE or EOF
         self.type = type
-        # token value: non-negative integer value, '+', '-', '*', or None
+        # token value: non-negative integer value, '+', '-', '*', '/' or None
         self.value = value
 
     def __str__(self):
@@ -29,7 +29,7 @@ class Token(object):
 
 class Interpreter(object):
     def __init__(self, text):
-        # client string input, e.g. "3 + 5", "12 - 5", "3 * 25", etc
+        # client string input, e.g. "3 + 5", "12 - 5", "3 * 25", "12 / 2", etc
         self.text = text
         # self.pos is an index into self.text
         self.pos = 0
@@ -87,6 +87,10 @@ class Interpreter(object):
                 self.advance()
                 return Token(MULTIPLY, '*')
 
+            if self.current_char == '/':
+                self.advance()
+                return Token(DIVIDE, '/')
+
             self.error()
 
         return Token(EOF, None)
@@ -120,8 +124,10 @@ class Interpreter(object):
             self.eat(PLUS)
         elif op.type == MINUS:
             self.eat(MINUS)
-        else:
+        elif op.type == MULTIPLY:
             self.eat(MULTIPLY)
+        else:
+            self.eat(DIVIDE)
 
         # we expect the current token to be an integer
         right = self.current_token
@@ -138,8 +144,10 @@ class Interpreter(object):
             result = left.value + right.value
         elif op.type == MINUS:
             result = left.value - right.value
-        else:
+        elif op.type == MULTIPLY:
             result = left.value * right.value
+        else:
+            result = left.value / right.value
         return result
 
 
