@@ -23,6 +23,10 @@ class TestCalc1Interpreter(unittest.TestCase):
         interpreter = Interpreter("12-5")
         self.assertEqual(interpreter.expr(), 7)
 
+    def test_multiplication(self):
+        interpreter = Interpreter("12 * 5")
+        self.assertEqual(interpreter.expr(), 60)
+
 
 if __name__ == '__main__':
     unittest.main()
