@@ -31,6 +31,10 @@ class TestCalc1Interpreter(unittest.TestCase):
         interpreter = Interpreter("12 / 6")
         self.assertEqual(interpreter.expr(), 2)
 
+    def test_multiple_operations(self):
+        interpreter = Interpreter("9 - 5 + 3 + 11")
+        self.assertEqual(interpreter.expr(), 18)
+
 
 if __name__ == '__main__':
     unittest.main()

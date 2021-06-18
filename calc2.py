@@ -105,19 +105,7 @@ class Interpreter(object):
         else:
             self.error()
 
-    def expr(self):
-        """Parser / Interpreter
-
-        expr -> INTEGER PLUS INTEGER
-        expr -> INTEGER MINUS INTEGER
-        """
-        # set current token to the first token taken from the input
-        self.current_token = self.get_next_token()
-
-        # we expect the current token to be an integer
-        left = self.current_token
-        self.eat(INTEGER)
-
+    def segment(self, left):
         # we expect the current token to be either a '+' or '-'
         op = self.current_token
         if op.type == PLUS:
@@ -148,7 +136,26 @@ class Interpreter(object):
             result = left.value * right.value
         else:
             result = left.value / right.value
-        return result
+
+        if self.current_token.type == EOF:
+            return result
+
+        return self.segment(Token(INTEGER, result))
+
+    def expr(self):
+        """Parser / Interpreter
+
+        expr -> INTEGER PLUS INTEGER
+        expr -> INTEGER MINUS INTEGER
+        """
+        # set current token to the first token taken from the input
+        self.current_token = self.get_next_token()
+
+        # we expect the current token to be an integer
+        left = self.current_token
+        self.eat(INTEGER)
+
+        return self.segment(left)
 
 
 def main():
