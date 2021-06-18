@@ -57,20 +57,35 @@ class Interpreter(object):
         # what token to create based on the single character
         current_char = text[self.pos]
 
-        # if the character is a digit then convert it to
-        # integer, create an INTEGER token, increment self.pos
-        # index to point to the next character after the digit,
-        # and return the INTEGER token
-        if current_char.isdigit():
-            token = Token(INTEGER, int(current_char))
-            self.pos += 1
-            return token
+        # get each consecutive character until a non-digit is reached
+        # then create an INTEGER token from the multi-digit integer,
+        # increment self.pos index to point to the next character
+        # after the integer and return the INTEGER token
+        num = ""
+        while True:
+            if current_char.isdigit():
+                num += current_char
+                self.pos += 1
 
+                if self.pos > len(text) - 1:
+                    return Token(INTEGER, int(num))
+
+                current_char = text[self.pos]
+                continue
+
+            if len(num) > 0:
+                token = Token(INTEGER, int(num))
+                return token
+
+            break
+
+        # get the plus character, create and return a PLUS token
         if current_char == '+':
             token = Token(PLUS, current_char)
             self.pos += 1
             return token
 
+        # throw error if the current character is not valid
         self.error()
 
     def eat(self, token_type):
