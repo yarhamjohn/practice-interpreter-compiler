@@ -19,6 +19,10 @@ class TestCalc1Interpreter(unittest.TestCase):
         interpreter = Interpreter(" 12+ 3")
         self.assertEqual(interpreter.expr(), 15)
 
+    def test_subtraction(self):
+        interpreter = Interpreter("12-5")
+        self.assertEqual(interpreter.expr(), 7)
+
 
 if __name__ == '__main__':
     unittest.main()

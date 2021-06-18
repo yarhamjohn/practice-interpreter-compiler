@@ -1,14 +1,26 @@
 #
 # EOF (end-of-file) token is used to indicate that
 # there is no more input left for lexical analysis
-INTEGER, PLUS, EOF = 'INTEGER', 'PLUS', 'EOF'
+INTEGER, PLUS, MINUS, EOF = 'INTEGER', 'PLUS', 'MINUS', 'EOF'
+
+
+class InterpreterException(Exception):
+    """Exception raised for errors in the lexical analyzer
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message="Error parsing input"):
+        self.message = message
+        super().__init__(self.message)
 
 
 class Token(object):
     def __init__(self, type, value):
-        # token type: INTEGER, PLUS, or EOF
+        # token type: INTEGER, PLUS, MINUS or EOF
         self.type = type
-        # token value: 0, 1, 2. 3, 4, 5, 6, 7, 8, 9, '+', or None
+        # token value: 0, 1, 2. 3, 4, 5, 6, 7, 8, 9, '+', '-', or None
         self.value = value
 
     def __str__(self):
@@ -17,6 +29,7 @@ class Token(object):
         Examples:
             Token(INTEGER, 3)
             Token(PLUS '+')
+            Token(MINUS '-')
         """
         return 'Token({type}, {value})'.format(
             type=self.type,
@@ -37,7 +50,7 @@ class Interpreter(object):
         self.current_token = None
 
     def error(self):
-        raise Exception('Error parsing input')
+        raise InterpreterException
 
     def get_next_token(self):
         """Lexical analyzer (also known as scanner or tokenizer)
@@ -84,9 +97,15 @@ class Interpreter(object):
 
             break
 
-        # get the plus character, create and return a PLUS token
+        # get a plus character, create and return a PLUS token
         if current_char == '+':
             token = Token(PLUS, current_char)
+            self.pos += 1
+            return token
+
+        # get a minus character, create and return a MINUS token
+        if current_char == '-':
+            token = Token(MINUS, current_char)
             self.pos += 1
             return token
 
@@ -112,9 +131,12 @@ class Interpreter(object):
         left = self.current_token
         self.eat(INTEGER)
 
-        # we expect the current token to be a '+' token
+        # we expect the current token to be a '+' token or a '-' token
         op = self.current_token
-        self.eat(PLUS)
+        try:
+            self.eat(PLUS)
+        except InterpreterException:
+            self.eat(MINUS)
 
         # we expect the current token to be a single-digit integer
         right = self.current_token
@@ -126,7 +148,11 @@ class Interpreter(object):
         # has been successfully found and the method can just
         # return the result of adding two integers, thus
         # effectively interpreting client input
-        result = left.value + right.value
+        if op.type is PLUS:
+            result = left.value + right.value
+        else:
+            result = left.value - right.value
+
         return result
 
 
