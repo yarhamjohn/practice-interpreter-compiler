@@ -73,6 +73,10 @@ class Interpreter(object):
         # ignore whitespace
         if current_char.isspace():
             self.pos += 1
+
+            if self.pos > len(text) - 1:
+                return Token(EOF, None)
+
             current_char = text[self.pos]
 
         # get each consecutive character until a non-digit is reached

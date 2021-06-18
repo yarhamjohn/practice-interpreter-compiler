@@ -16,7 +16,7 @@ class TestCalc1Interpreter(unittest.TestCase):
         self.assertEqual(interpreter.expr(), 14)
 
     def test_addition_with_spaces(self):
-        interpreter = Interpreter(" 12+ 3")
+        interpreter = Interpreter(" 12 + 3 ")
         self.assertEqual(interpreter.expr(), 15)
 
     def test_subtraction(self):
