@@ -2,7 +2,7 @@ import unittest
 from calc2 import Interpreter
 
 
-class TestCalc1Interpreter(unittest.TestCase):
+class TestCalc2Interpreter(unittest.TestCase):
     def test_single_digit_addition(self):
         interpreter = Interpreter("1+2")
         self.assertEqual(interpreter.expr(), 3)

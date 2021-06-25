@@ -49,11 +49,12 @@ class Interpreter(object):
             self.current_char = self.text[self.pos]
 
     def skip_whitespace(self):
+        """Skip whitespace characters in string being parsed"""
         while self.current_char is not None and self.current_char.isspace():
             self.advance()
 
-    def integer(self):
-        """Return a (multidigit) integer consumed from the input."""
+    def get_integer(self):
+        """Return a (multi digit) integer consumed from the input."""
         result = ''
         while self.current_char is not None and self.current_char.isdigit():
             result += self.current_char
@@ -73,7 +74,7 @@ class Interpreter(object):
                 continue
 
             if self.current_char.isdigit():
-                return Token(INTEGER, self.integer())
+                return Token(INTEGER, self.get_integer())
 
             if self.current_char == '+':
                 self.advance()
@@ -96,51 +97,19 @@ class Interpreter(object):
         return Token(EOF, None)
 
     def eat(self, token_type):
-        # compare the current token type with the passed token
-        # type and if they match then "eat" the current token
-        # and assign the next token to the self.current_token,
-        # otherwise raise an exception.
+        """Advances the current token to the next one
+        if the current token matches the passed type
+        """
         if self.current_token.type == token_type:
             self.current_token = self.get_next_token()
         else:
             self.error()
 
-    def segment(self, left):
-        # we expect the current token to be either a '+' or '-'
-        op = self.current_token
-        if op.type == PLUS:
-            self.eat(PLUS)
-        elif op.type == MINUS:
-            self.eat(MINUS)
-        elif op.type == MULTIPLY:
-            self.eat(MULTIPLY)
-        else:
-            self.eat(DIVIDE)
-
-        # we expect the current token to be an integer
-        right = self.current_token
+    def term(self):
+        """Returns an INTEGER token value"""
+        token = self.current_token
         self.eat(INTEGER)
-        # after the above call the self.current_token is set to
-        # EOF token
-
-        # at this point either the INTEGER PLUS INTEGER or
-        # the INTEGER MINUS INTEGER sequence of tokens
-        # has been successfully found and the method can just
-        # return the result of adding or subtracting two integers,
-        # thus effectively interpreting client input
-        if op.type == PLUS:
-            result = left.value + right.value
-        elif op.type == MINUS:
-            result = left.value - right.value
-        elif op.type == MULTIPLY:
-            result = left.value * right.value
-        else:
-            result = left.value / right.value
-
-        if self.current_token.type == EOF:
-            return result
-
-        return self.segment(Token(INTEGER, result))
+        return token.value
 
     def expr(self):
         """Parser / Interpreter
@@ -151,11 +120,24 @@ class Interpreter(object):
         # set current token to the first token taken from the input
         self.current_token = self.get_next_token()
 
-        # we expect the current token to be an integer
-        left = self.current_token
-        self.eat(INTEGER)
+        result = self.term()
+        while self.current_token.type in (PLUS, MINUS, MULTIPLY, DIVIDE):
+            token = self.current_token
 
-        return self.segment(left)
+            if token.type == PLUS:
+                self.eat(PLUS)
+                result += self.term()
+            elif token.type == MINUS:
+                self.eat(MINUS)
+                result -= self.term()
+            elif token.type == MULTIPLY:
+                self.eat(MULTIPLY)
+                result *= self.term()
+            elif token.type == DIVIDE:
+                self.eat(DIVIDE)
+                result /= self.term()
+
+        return result
 
 
 def main():
