@@ -6,12 +6,18 @@
 
     internal record IntegerToken(int Value) : Token;
 
-    internal abstract record OperationToken : Token
+    internal record ParenthesisToken : Token;
+    
+    internal record LeftParenthesisToken : ParenthesisToken;
+    
+    internal record RightParenthesisToken : ParenthesisToken;
+
+    internal abstract record OperatorToken : Token
     {
         internal abstract int Calculate(int left, int right);
     }
 
-    internal record PlusToken : OperationToken
+    internal record PlusToken : OperatorToken
     {
         internal override int Calculate(int left, int right)
         {
@@ -19,7 +25,7 @@
         }
     }
 
-    internal record MinusToken : OperationToken
+    internal record MinusToken : OperatorToken
     {
         internal override int Calculate(int left, int right)
         {
@@ -27,7 +33,7 @@
         }
     }
 
-    internal record MultiplyToken : OperationToken
+    internal record MultiplyToken : OperatorToken
     {
         internal override int Calculate(int left, int right)
         {
@@ -35,7 +41,7 @@
         }
     }
 
-    internal record DivideToken : OperationToken
+    internal record DivideToken : OperatorToken
     {
         internal override int Calculate(int left, int right)
         {

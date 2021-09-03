@@ -34,10 +34,18 @@ namespace SimpleInterpreter
                 return new IntegerToken((int) num);
             }
             
-            if (TryGetOperationToken(out var token))
+            // Check if the next token is an operator and if so, return it
+            if (TryGetOperationToken(out var operatorToken))
             {
                 _currentPosition++;
-                return token;
+                return operatorToken;
+            }
+            
+            // Check if the next token is a parenthesis and if so, return it
+            if (TryGetParenthesis(out var parenthesisToken))
+            {
+                _currentPosition++;
+                return parenthesisToken;
             }
             
             throw new InvalidOperationException($"Invalid character found in input: {CurrentChar()}");
@@ -104,7 +112,7 @@ namespace SimpleInterpreter
         /// The parsed operation token. Is null if the _currentPosition in the _input is not a known operation.
         /// </param>
         /// <returns>True when the _currentPosition is an operation.</returns>
-        private bool TryGetOperationToken([NotNullWhen(true)] out Token? token)
+        private bool TryGetOperationToken([NotNullWhen(true)] out OperatorToken? token)
         {
             token = CurrentChar() switch
             {
@@ -117,5 +125,19 @@ namespace SimpleInterpreter
 
             return token != null;
         }
+        
+        
+        private bool TryGetParenthesis([NotNullWhen(true)] out ParenthesisToken? token)
+        {
+            token = CurrentChar() switch
+            {
+                '(' => new LeftParenthesisToken(),
+                ')' => new RightParenthesisToken(),
+                _ => null
+            };
+            
+            return token != null;
+        }
+
     }
 }

@@ -89,5 +89,33 @@ namespace SimpleInterpreterTests
             var result = Program.Interpret("14 + 2 * 3 - 6 / 2");
             result.Should().Be(17);
         }
+        
+        [Test]
+        public void SimpleParentheses()
+        {
+            var result = Program.Interpret("(2 + 4) / 2");
+            result.Should().Be(3);
+        }
+        
+        [Test]
+        public void MediumParentheses()
+        {
+            var result = Program.Interpret("7 + 3 * (10 / (12 / (3 + 1) - 1))");
+            result.Should().Be(22);
+        }
+        
+        [Test]
+        public void ComplexParentheses()
+        {
+            var result = Program.Interpret("7 + 3 * (10 / (12 / (3 + 1) - 1)) / (2 + 3) - 5 - 3 + (8)");
+            result.Should().Be(10);
+        }
+        
+        [Test]
+        public void MultipleParentheses()
+        {
+            var result = Program.Interpret("7 + (((3 + 2)))");
+            result.Should().Be(12);
+        }
     }
 }

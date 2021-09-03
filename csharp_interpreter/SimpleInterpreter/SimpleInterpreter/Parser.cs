@@ -15,38 +15,43 @@ namespace SimpleInterpreter
         public int Calculate()
         {
             //
-            // expr          : add_sub_expr
-            // add_sub_expr  : mul_div_expr ((ADD | SUB) mul_div_expr)*
-            // mul_div_expr  : factor ((MUL | DIV) factor)*
-            // factor        : INTEGER
+            // expr   : term ((ADD | SUB) term)*
+            // term   : factor ((MUL | DIV) factor)*
+            // factor : INTEGER | LPARENS expr RPARENS
             //
 
-            var result = DoMulDivExpr();
-            
+            return GetExpr();
+        }
+
+        private int GetExpr()
+        {
+            var result = GetTerm();
+
             while (_currentToken is PlusToken or MinusToken)
             {
                 result = _currentToken switch
                 {
-                    PlusToken plus => plus.Calculate(result, DoMulDivExpr()),
-                    MinusToken sub => sub.Calculate(result, DoMulDivExpr()),
-                    _ => throw new InvalidOperationException("Shouldn't ever end up here but can't declare variable in while loop expression :(")
+                    PlusToken plus => plus.Calculate(result, GetTerm()),
+                    MinusToken sub => sub.Calculate(result, GetTerm()),
+                    _ => throw new InvalidOperationException(
+                        "Shouldn't ever end up here but can't declare variable in while loop expression :(")
                 };
             }
 
             return result;
         }
 
-        private int DoMulDivExpr()
+        private int GetTerm()
         {
-            var result = GetNextInteger();
+            var result = GetFactor();
 
             _currentToken = _tokenizer.GetNextToken();
             while (_currentToken is MultiplyToken or DivideToken)
             {
                 result = _currentToken switch
                 {
-                    MultiplyToken mul => mul.Calculate(result, GetNextInteger()),
-                    DivideToken div => div.Calculate(result, GetNextInteger()),
+                    MultiplyToken mul => mul.Calculate(result, GetFactor()),
+                    DivideToken div => div.Calculate(result, GetFactor()),
                     _ => throw new InvalidOperationException("Shouldn't ever end up here but can't declare variable in while loop expression :(")
                 };
 
@@ -56,7 +61,7 @@ namespace SimpleInterpreter
             return result;
         }
 
-        private int GetNextInteger()
+        private int GetFactor()
         {
             _currentToken = _tokenizer.GetNextToken();
             if (_currentToken is IntegerToken integerToken)
@@ -64,7 +69,18 @@ namespace SimpleInterpreter
                 return integerToken.Value;
             }
 
-            throw new InvalidOperationException("Next token was not an integer.");
+            if (_currentToken is LeftParenthesisToken)
+            {
+                var result = GetExpr();
+                if (_currentToken is not RightParenthesisToken)
+                {
+                    throw new InvalidOperationException("Found unclosed left parenthesis.");
+                }
+
+                return result;
+            }
+
+            throw new InvalidOperationException("The next factor was not valid.");
         }
     }
 }
