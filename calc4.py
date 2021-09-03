@@ -2,14 +2,14 @@
 #
 # EOF (end-of-file) token is used to indicate that
 # there is no more input left for lexical analysis
-INTEGER, MUL, DIV, EOF = 'INTEGER', 'MUL', 'DIV', 'EOF'
+INTEGER, MUL, DIV, EOF, ADD, SUB = 'INTEGER', 'MUL', 'DIV', 'EOF', 'ADD', 'SUB'
 
 
 class Token(object):
     def __init__(self, type, value):
-        # token type: INTEGER, MUL, DIV, or EOF
+        # token type: INTEGER, MUL, DIV, EOF, ADD or SUB
         self.type = type
-        # token value: non-negative integer value, '*', '/', or None
+        # token value: non-negative integer value, '*', '/', '+', '-' or None
         self.value = value
 
     def __str__(self):
@@ -74,6 +74,14 @@ class Lexer(object):
             if self.current_char.isdigit():
                 return Token(INTEGER, self.integer())
 
+            if self.current_char == '+':
+                self.advance()
+                return Token(ADD, '+')
+
+            if self.current_char == '-':
+                self.advance()
+                return Token(SUB, '-')
+
             if self.current_char == '*':
                 self.advance()
                 return Token(MUL, '*')
@@ -115,12 +123,7 @@ class Interpreter(object):
         self.eat(INTEGER)
         return token.value
 
-    def expr(self):
-        """Arithmetic expression parser / interpreter.
-
-        expr   : factor ((MUL | DIV) factor)*
-        factor : INTEGER
-        """
+    def mul_div_expr(self):
         result = self.factor()
 
         while self.current_token.type in (MUL, DIV):
@@ -133,6 +136,27 @@ class Interpreter(object):
                 result = result / self.factor()
 
         return result
+
+    def expr(self):
+        """Arithmetic expression parser / interpreter.
+
+        expr          : add_sub_expr
+        add_sub_expr  : mul_div_expr ((ADD | SUB) mul_div_expr)*
+        mul_div_expr  : factor ((MUL | DIV) factor)*
+        factor        : INTEGER
+        """
+        mul_div_result = self.mul_div_expr()
+
+        while self.current_token.type in (ADD, SUB):
+            token = self.current_token
+            if token.type == ADD:
+                self.eat(ADD)
+                mul_div_result = mul_div_result + self.mul_div_expr()
+            elif token.type == SUB:
+                self.eat(SUB)
+                mul_div_result = mul_div_result - self.mul_div_expr()
+
+        return mul_div_result
 
 
 def main():
