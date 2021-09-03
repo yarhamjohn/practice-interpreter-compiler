@@ -19,7 +19,7 @@ namespace SimpleInterpreter
             var parser = new Parser(tokenizer);
             
             // Interpreter - calculate the result
-            return parser.GetCalculation();
+            return parser.Calculate();
         }
     }
 }

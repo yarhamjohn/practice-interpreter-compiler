@@ -68,5 +68,26 @@ namespace SimpleInterpreterTests
             var result = Program.Interpret("9 * 6 / 3 * 2");
             result.Should().Be(36);
         }
+        
+        [Test]
+        public void MultipleMixOperationsOne()
+        {
+            var result = Program.Interpret("2 + 7 * 4");
+            result.Should().Be(30);
+        }
+        
+        [Test]
+        public void MultipleMixOperationsTwo()
+        {
+            var result = Program.Interpret("7 - 8 / 4");
+            result.Should().Be(5);
+        }
+        
+        [Test]
+        public void MultipleMixOperationsThree()
+        {
+            var result = Program.Interpret("14 + 2 * 3 - 6 / 2");
+            result.Should().Be(17);
+        }
     }
 }

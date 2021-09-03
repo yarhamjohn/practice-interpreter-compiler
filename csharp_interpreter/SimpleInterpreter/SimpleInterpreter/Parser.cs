@@ -5,75 +5,66 @@ namespace SimpleInterpreter
     internal sealed class Parser
     {
         private readonly Tokenizer _tokenizer;
+        private Token? _currentToken;
 
         public Parser(Tokenizer tokenizer)
         {
             _tokenizer = tokenizer;
         }
 
-        public int GetCalculation()
+        public int Calculate()
         {
-            int? runningTotal = null;
-            OperationToken? currentOperation = null;
+            //
+            // expr          : add_sub_expr
+            // add_sub_expr  : mul_div_expr ((ADD | SUB) mul_div_expr)*
+            // mul_div_expr  : factor ((MUL | DIV) factor)*
+            // factor        : INTEGER
+            //
 
-            void HandleOperationToken(OperationToken token)
-            {
-                if (runningTotal is null)
-                {
-                    throw new InvalidOperationException("Cannot have an operation without a left side.");
-                }
-                
-                currentOperation = token;
-            }
-
-            void HandleIntegerToken(IntegerToken token)
-            {
-                if (runningTotal is null)
-                {
-                    runningTotal = token.Value;
-                }
-                else if (currentOperation is null)
-                {
-                    throw new InvalidOperationException("Cannot have a right side integer without an operator.");
-                }
-                else
-                {
-                    runningTotal = currentOperation.Calculate((int) runningTotal, token.Value);
-                    currentOperation = null;
-                }
-            }
+            var result = DoMulDivExpr();
             
-            var currentToken = _tokenizer.GetNextToken();
-            while (currentToken is not EndOfFileToken)
+            while (_currentToken is PlusToken or MinusToken)
             {
-                switch (currentToken)
+                result = _currentToken switch
                 {
-                    case IntegerToken integer:
-                        HandleIntegerToken(integer);
-                        break;
-                    case OperationToken operation:
-                        HandleOperationToken(operation);
-                        break;
-                    default:
-                        throw new InvalidOperationException("Unrecognised token found.");
-                }
-                
-                currentToken = _tokenizer.GetNextToken();
+                    PlusToken plus => plus.Calculate(result, DoMulDivExpr()),
+                    MinusToken sub => sub.Calculate(result, DoMulDivExpr()),
+                    _ => throw new InvalidOperationException("Shouldn't ever end up here but can't declare variable in while loop expression :(")
+                };
             }
 
-            if (currentOperation is not null)
+            return result;
+        }
+
+        private int DoMulDivExpr()
+        {
+            var result = GetNextInteger();
+
+            _currentToken = _tokenizer.GetNextToken();
+            while (_currentToken is MultiplyToken or DivideToken)
             {
-                throw new InvalidOperationException(
-                    "Cannot complete calculation as there is an unapplied operation (no right-side integer).");
+                result = _currentToken switch
+                {
+                    MultiplyToken mul => mul.Calculate(result, GetNextInteger()),
+                    DivideToken div => div.Calculate(result, GetNextInteger()),
+                    _ => throw new InvalidOperationException("Shouldn't ever end up here but can't declare variable in while loop expression :(")
+                };
+
+                _currentToken = _tokenizer.GetNextToken();
             }
-            
-            if (runningTotal is null)
+
+            return result;
+        }
+
+        private int GetNextInteger()
+        {
+            _currentToken = _tokenizer.GetNextToken();
+            if (_currentToken is IntegerToken integerToken)
             {
-                throw new InvalidOperationException(
-                    "No result was calculated, most likely due to invalid input.");
+                return integerToken.Value;
             }
-            
-            return (int) runningTotal;
+
+            throw new InvalidOperationException("Next token was not an integer.");
         }
     }
 }
